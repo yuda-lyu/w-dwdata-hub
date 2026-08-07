@@ -1,0 +1,31 @@
+{
+  "name": "w-dwdata-hub",
+  "version": "1.0.0",
+  "main": "dist/w-dwdata-hub.umd.js",
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "lodash-es": "^4.18.1",
+    "rss-parser": "^3.13.0",
+    "w-fetch-web": "^1.0.1",
+    "wsemi": "^1.8.67"
+  },
+  "devDependencies": {
+    "w-package-tools": "^1.1.12"
+  },
+  "scripts": {
+    "test": "mocha --parallel --timeout 180000",
+    "deploy": "gh-pages -d docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuda-lyu/w-dwdata-hub.git"
+  },
+  "keywords": [
+    "package",
+    "tool",
+    "download",
+    "nodejs"
+  ],
+  "author": "yuda-lyu(semisphere)",
+  "license": "MIT"
+}

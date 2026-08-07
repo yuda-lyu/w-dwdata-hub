@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>decodeEntities.mjs - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#KNOWN_TOPICS">KNOWN_TOPICS</a></li><li><a href="global.html#WDwdataHub">WDwdataHub</a></li><li><a href="global.html#assertTpexFieldShape">assertTpexFieldShape</a></li><li><a href="global.html#decodeEntities">decodeEntities</a></li><li><a href="global.html#extractAuthorFromContent">extractAuthorFromContent</a></li><li><a href="global.html#extractDivContent">extractDivContent</a></li><li><a href="global.html#extractHtmlTitle">extractHtmlTitle</a></li><li><a href="global.html#extractPubTime">extractPubTime</a></li><li><a href="global.html#extractTitle">extractTitle</a></li><li><a href="global.html#fetchAiNewsAggregator">fetchAiNewsAggregator</a></li><li><a href="global.html#fetchAisixiang">fetchAisixiang</a></li><li><a href="global.html#fetchAllListPages">fetchAllListPages</a></li><li><a href="global.html#fetchAllSearchPages">fetchAllSearchPages</a></li><li><a href="global.html#fetchArticle">fetchArticle</a></li><li><a href="global.html#fetchAuthorArticles">fetchAuthorArticles</a></li><li><a href="global.html#fetchAuthorsList">fetchAuthorsList</a></li><li><a href="global.html#fetchCnyes">fetchCnyes</a></li><li><a href="global.html#fetchFuturesData">fetchFuturesData</a></li><li><a href="global.html#fetchGuancha">fetchGuancha</a></li><li><a href="global.html#fetchHackerNews">fetchHackerNews</a></li><li><a href="global.html#fetchHtml">fetchHtml</a></li><li><a href="global.html#fetchInstitutionalData">fetchInstitutionalData</a></li><li><a href="global.html#fetchKeywordArticles">fetchKeywordArticles</a></li><li><a href="global.html#fetchMoneydj">fetchMoneydj</a></li><li><a href="global.html#fetchMops">fetchMops</a></li><li><a href="global.html#fetchOnce">fetchOnce</a></li><li><a href="global.html#fetchPCRatio">fetchPCRatio</a></li><li><a href="global.html#fetchRSS">fetchRSS</a></li><li><a href="global.html#fetchStatementdog">fetchStatementdog</a></li><li><a href="global.html#fetchTaifex">fetchTaifex</a></li><li><a href="global.html#fetchTargetWithRetry">fetchTargetWithRetry</a></li><li><a href="global.html#fetchTitleArticles">fetchTitleArticles</a></li><li><a href="global.html#fetchTopicArticles">fetchTopicArticles</a></li><li><a href="global.html#fetchTopicsList">fetchTopicsList</a></li><li><a href="global.html#fetchTpex3insti">fetchTpex3insti</a></li><li><a href="global.html#fetchTpexMargin">fetchTpexMargin</a></li><li><a href="global.html#fetchTpexStock">fetchTpexStock</a></li><li><a href="global.html#fetchTwDataHoliday">fetchTwDataHoliday</a></li><li><a href="global.html#fetchTwseMargin">fetchTwseMargin</a></li><li><a href="global.html#fetchTwseStock">fetchTwseStock</a></li><li><a href="global.html#fetchTwseT86">fetchTwseT86</a></li><li><a href="global.html#fetchWithRetry">fetchWithRetry</a></li><li><a href="global.html#getCfg">getCfg</a></li><li><a href="global.html#getOptFetch">getOptFetch</a></li><li><a href="global.html#getPayload">getPayload</a></li><li><a href="global.html#htmlToMarkdown">htmlToMarkdown</a></li><li><a href="global.html#isHomepageHtml">isHomepageHtml</a></li><li><a href="global.html#isNonHolidayEntry">isNonHolidayEntry</a></li><li><a href="global.html#isRetryableError">isRetryableError</a></li><li><a href="global.html#isYmd">isYmd</a></li><li><a href="global.html#lookupAuthor">lookupAuthor</a></li><li><a href="global.html#lookupTopic">lookupTopic</a></li><li><a href="global.html#parseAuthorColumnPage">parseAuthorColumnPage</a></li><li><a href="global.html#parseAuthorIndex">parseAuthorIndex</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li><li><a href="global.html#parseIntComma">parseIntComma</a></li><li><a href="global.html#parseListPage">parseListPage</a></li><li><a href="global.html#parseNum">parseNum</a></li><li><a href="global.html#parseSearchResults">parseSearchResults</a></li><li><a href="global.html#parseSearchTotalPages">parseSearchTotalPages</a></li><li><a href="global.html#parseZhuantiArticles">parseZhuantiArticles</a></li><li><a href="global.html#pickPint">pickPint</a></li><li><a href="global.html#rocToWestern">rocToWestern</a></li><li><a href="global.html#safeFilename">safeFilename</a></li><li><a href="global.html#toDatetimeUTC8">toDatetimeUTC8</a></li><li><a href="global.html#toRocDate">toRocDate</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">decodeEntities.mjs</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import isstr from 'wsemi/src/isstr.mjs'
+
+
+//常用具名HTML實體對照表, 涵蓋中文網站正文常見者
+let NAMED = {
+    nbsp: ' ',
+    amp: '&amp;',
+    lt: '&lt;',
+    gt: '>',
+    quot: '"',
+    apos: '\'',
+    hellip: '…',
+    mdash: '—',
+    ndash: '–',
+    middot: '·',
+    ldquo: '"',
+    rdquo: '"',
+    lsquo: '‘',
+    rsquo: '’',
+    laquo: '«',
+    raquo: '»',
+    copy: '©',
+    reg: '®',
+}
+
+
+/**
+ * 解碼HTML實體
+ *
+ * 支援具名實體(如&amp;amp;)、十進位數值實體(如&amp;#39;)與十六進位數值實體(如&amp;#x27;),
+ * 無對照之具名實體保留原字串不動
+ *
+ * @param {String} str 輸入含HTML實體之字串
+ * @returns {String} 回傳解碼後字串，輸入非字串時回傳''
+ * @example
+ *
+ * import decodeEntities from './src/decodeEntities.mjs'
+ *
+ * console.log(decodeEntities('a&amp;amp;b&amp;#65;&amp;#x42;&amp;unknown;'))
+ * // => 'a&amp;bAB&amp;unknown;'
+ *
+ */
+function decodeEntities(str) {
+
+    //check
+    if (!isstr(str)) {
+        return ''
+    }
+
+    return str
+        .replace(/&amp;([a-zA-Z]+);/g, (m, n) => (NAMED[n] !== undefined ? NAMED[n] : m))
+        .replace(/&amp;#(\d+);/g, (m, n) => String.fromCodePoint(Number(n)))
+        .replace(/&amp;#x([\da-fA-F]+);/g, (m, n) => String.fromCodePoint(parseInt(n, 16)))
+}
+
+
+export default decodeEntities
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Fri Aug 07 2026 12:04:51 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

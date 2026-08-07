@@ -1,0 +1,313 @@
+import { chromium } from 'playwright'
+import get from 'lodash-es/get.js'
+import isbol from 'wsemi/src/isbol.mjs'
+import isestr from 'wsemi/src/isestr.mjs'
+import isp0int from 'wsemi/src/isp0int.mjs'
+import cint from 'wsemi/src/cint.mjs'
+import delay from 'wsemi/src/delay.mjs'
+
+
+//公開資訊觀測站重大訊息頁與其查詢API
+let PAGE_URL = 'https://mops.twse.com.tw/mops/#/web/t146sb10'
+let API_URL = 'https://mops.twse.com.tw/mops/api/t146sb10'
+
+
+//預設值
+let DEFAULT_MAX_RETRIES = 10
+let DEFAULT_BASE_DELAY_MS = 5000
+let DEFAULT_MAX_DELAY_MS = 30000
+let LAUNCH_TIMEOUT_MS = 360000
+let GOTO_TIMEOUT_MS = 60000
+
+
+//目標市場別, marketKind為API查詢參數
+let MARKET_KINDS = [
+    { name: '上市', marketKind: 'sii' },
+    { name: '上櫃', marketKind: 'otc' },
+    { name: '興櫃', marketKind: 'rotc' },
+    { name: '公開發行', marketKind: 'pub' },
+]
+
+
+/**
+ * 組出單一市場別之API查詢payload
+ *
+ * @param {String} marketKind 輸入市場別字串，可為'sii'、'otc'、'rotc'、'pub'
+ * @returns {Object} 回傳API查詢payload物件
+ */
+function getPayload(marketKind) {
+    return {
+        scopeType: '2',
+        companyId: '',
+        dateType: '2',
+        firstDate: '',
+        lastDate: '',
+        marketKind,
+        announcementBasis: '0',
+        dateRangeType: '1',
+        announcementType: '1',
+        sort: '1',
+        encodeURIComponent: 1,
+        step: 1,
+        firstin: 1,
+        off: 1,
+    }
+}
+
+
+/**
+ * 於瀏覽器頁面內以fetch呼叫MOPS查詢API並自動重試
+ *
+ * 需於MOPS頁面context內發送請求(同源且帶站方cookie), 故採page.evaluate而非node端直接請求;
+ * 重試條件為HTTP 5xx、403、429或網路錯誤, application-level錯誤(如MOPS code 500)屬非暫時性故不重試
+ *
+ * @param {Object} page 輸入playwright之page物件
+ * @param {Object} target 輸入目標物件，內含name、marketKind、url與payload
+ * @param {Object} cfg 輸入已正規化之設定物件
+ * @returns {Promise} 回傳Promise，resolve回傳{json,raw}或{error,retryable}
+ */
+async function fetchTargetWithRetry(page, target, cfg) {
+
+    let data = null
+    for (let attempt = 1; attempt <= cfg.maxRetries + 1; attempt++) {
+
+        data = await page.evaluate(async (t) => {
+            try {
+
+                let response = await fetch(t.url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(t.payload),
+                })
+                if (response.status >= 500 || response.status === 403 || response.status === 429) {
+                    return { error: `HTTP ${response.status}`, retryable: true }
+                }
+
+                let text = await response.text()
+                try {
+
+                    let json = JSON.parse(text)
+
+                    //驗證MOPS application-level狀態碼(HTTP 200不代表查詢成功)
+                    //實測契約: code=200「查詢成功」、code=406「查無相符資料」(正常空結果)、其餘(如500)為application-level錯誤
+                    let code = json && json.code
+                    if (code !== 200 && code !== 406) {
+                        //非成功且非「查無資料」→ application-level錯誤, 帶原始回應供除錯, 屬非暫時性故不重試
+                        return { error: `MOPS code ${code}: ${(json && json.message) || ''}`, json, raw: text.substring(0, 500), retryable: false }
+                    }
+
+                    return { json, raw: text.substring(0, 500) }
+                }
+                catch (e) {
+                    return { error: 'Parse Error', raw: text, retryable: false }
+                }
+
+            }
+            catch (err) {
+                return { error: err.toString(), retryable: true }
+            }
+        }, target)
+
+        if (!data.error) {
+            return data
+        }
+
+        let retryable = data.retryable !== false
+        let attemptsLeft = cfg.maxRetries + 1 - attempt
+        if (!retryable || attemptsLeft <= 0) {
+            return data //回傳錯誤結果, 由呼叫方處理
+        }
+
+        let ms = Math.min(cfg.baseDelayMs * attempt, cfg.maxDelayMs)
+        if (cfg.showLog) {
+            console.warn(`[${target.name}][Retry ${attempt}/${cfg.maxRetries}] ${data.error} — 等待 ${ms / 1000}s 後重試...`)
+        }
+        await delay(ms)
+
+    }
+
+    return data
+}
+
+
+/**
+ * 抓取公開資訊觀測站(MOPS)今日重大訊息
+ *
+ * 以playwright啟動本機Chrome(channel為'chrome', 可由環境變數CHROME_PATH指定執行檔)開啟MOPS重大訊息頁,
+ * 再於頁面context內逐一查詢上市、上櫃、興櫃與公開發行之今日重大訊息;
+ * 單一市場別失敗時記錄於該筆之error並續抓其餘市場別, 由hasError告知是否有失敗
+ *
+ * @param {Object} [opt={}] 輸入設定物件，預設{}
+ * @param {String} [opt.pageUrl='https://mops.twse.com.tw/mops/#/web/t146sb10'] 輸入MOPS重大訊息頁網址字串，供測試或改指向鏡像時覆寫
+ * @param {String} [opt.apiUrl='https://mops.twse.com.tw/mops/api/t146sb10'] 輸入MOPS查詢API網址字串，供測試或改指向鏡像時覆寫
+ * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
+ * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @returns {Promise} 回傳Promise，resolve回傳結果物件{results,hasError}，results各筆為{market,marketKind,data,error,timestamp}，瀏覽器啟動失敗時reject回傳錯誤物件
+ * @example
+ *
+ * import fetchMops from './src/fetchMops.mjs'
+ *
+ * let test = async () => {
+ *
+ *     let r = await fetchMops()
+ *     console.log(r.hasError, r.results.length, r.results[0].market)
+ *     // => false 4 '上市'
+ *
+ * }
+ * await test()
+ *     .catch((err) => {
+ *         console.log(err)
+ *     })
+ *
+ */
+async function fetchMops(opt = {}) {
+
+    //pageUrl
+    let pageUrl = get(opt, 'pageUrl')
+    if (!isestr(pageUrl)) {
+        pageUrl = PAGE_URL
+    }
+
+    //apiUrl
+    let apiUrl = get(opt, 'apiUrl')
+    if (!isestr(apiUrl)) {
+        apiUrl = API_URL
+    }
+
+    //maxRetries
+    let maxRetries = get(opt, 'maxRetries')
+    if (!isp0int(maxRetries)) {
+        maxRetries = DEFAULT_MAX_RETRIES
+    }
+    else {
+        maxRetries = cint(maxRetries)
+    }
+
+    //showLog
+    let showLog = get(opt, 'showLog')
+    if (!isbol(showLog)) {
+        showLog = true
+    }
+
+    //cfg
+    let cfg = {
+        maxRetries,
+        baseDelayMs: DEFAULT_BASE_DELAY_MS,
+        maxDelayMs: DEFAULT_MAX_DELAY_MS,
+        showLog,
+    }
+
+    //targets
+    let targets = MARKET_KINDS.map((v) => {
+        return {
+            name: v.name,
+            marketKind: v.marketKind,
+            url: apiUrl,
+            payload: getPayload(v.marketKind),
+        }
+    })
+
+    if (showLog) {
+        console.log('啟動瀏覽器...')
+    }
+
+    //browser, 帶重試之瀏覽器啟動
+    let browser = null
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+        try {
+            browser = await chromium.launch({
+                headless: true,
+                //設定環境變數CHROME_PATH則用該路徑啟動瀏覽器
+                //未設定時為undefined, playwright會忽略executablePath改走channel為'chrome', 行為不變
+                executablePath: process.env.CHROME_PATH || undefined,
+                channel: 'chrome',
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                timeout: LAUNCH_TIMEOUT_MS,
+            })
+            break
+        }
+        catch (err) {
+            let attemptsLeft = maxRetries + 1 - attempt
+            if (attemptsLeft <= 0) {
+                throw new Error(`瀏覽器啟動失敗（已重試 ${maxRetries} 次）: ${err.message}`)
+            }
+            let ms = Math.min(DEFAULT_BASE_DELAY_MS * attempt, DEFAULT_MAX_DELAY_MS)
+            if (showLog) {
+                console.warn(`[browser.launch][Retry ${attempt}/${maxRetries}] ${err.message} — 等待 ${ms / 1000}s 後重試...`)
+            }
+            await delay(ms)
+        }
+    }
+
+    try {
+
+        let page = await browser.newPage()
+
+        //帶重試之頁面導航
+        if (showLog) {
+            console.log('前往 MOPS 重大訊息頁面 (t146sb10)...')
+        }
+        for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+            try {
+                await page.goto(pageUrl, { waitUntil: 'networkidle', timeout: GOTO_TIMEOUT_MS })
+                break
+            }
+            catch (err) {
+                let attemptsLeft = maxRetries + 1 - attempt
+                if (attemptsLeft <= 0) {
+                    throw err
+                }
+                let ms = Math.min(DEFAULT_BASE_DELAY_MS * attempt, DEFAULT_MAX_DELAY_MS)
+                if (showLog) {
+                    console.warn(`[page.goto][Retry ${attempt}/${maxRetries}] ${err.message} — 等待 ${ms / 1000}s 後重試...`)
+                }
+                await delay(ms)
+            }
+        }
+
+        await page.waitForTimeout(2000)
+
+        //results
+        let results = []
+        for (let target of targets) {
+
+            if (showLog) {
+                console.log(`正在抓取 [${target.name}] 資料...`)
+            }
+
+            let data = await fetchTargetWithRetry(page, target, cfg)
+
+            results.push({
+                market: target.name,
+                marketKind: target.marketKind,
+                data: data.json || data,
+                ...(data.error && { error: data.error }),
+                timestamp: new Date().toISOString(),
+            })
+
+            await page.waitForTimeout(1000)
+        }
+
+        if (showLog) {
+            let summary = results.map((r) => {
+                let resultData = get(r, 'data.result', get(r, 'data'))
+                let count = Array.isArray(resultData) ? resultData.length : 0
+                return `${r.market}: 取得 ${count} 筆資料`
+            })
+            console.log('抓取完成。摘要:', summary)
+        }
+
+        //hasError
+        let hasError = results.some((r) => r.error)
+
+        return { results, hasError }
+
+    }
+    finally {
+        await browser.close()
+    }
+}
+
+
+export { MARKET_KINDS, getPayload }
+export default fetchMops

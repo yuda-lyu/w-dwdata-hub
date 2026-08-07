@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>htmlToMarkdown.mjs - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#KNOWN_TOPICS">KNOWN_TOPICS</a></li><li><a href="global.html#WDwdataHub">WDwdataHub</a></li><li><a href="global.html#assertTpexFieldShape">assertTpexFieldShape</a></li><li><a href="global.html#decodeEntities">decodeEntities</a></li><li><a href="global.html#extractAuthorFromContent">extractAuthorFromContent</a></li><li><a href="global.html#extractDivContent">extractDivContent</a></li><li><a href="global.html#extractHtmlTitle">extractHtmlTitle</a></li><li><a href="global.html#extractPubTime">extractPubTime</a></li><li><a href="global.html#extractTitle">extractTitle</a></li><li><a href="global.html#fetchAiNewsAggregator">fetchAiNewsAggregator</a></li><li><a href="global.html#fetchAisixiang">fetchAisixiang</a></li><li><a href="global.html#fetchAllListPages">fetchAllListPages</a></li><li><a href="global.html#fetchAllSearchPages">fetchAllSearchPages</a></li><li><a href="global.html#fetchArticle">fetchArticle</a></li><li><a href="global.html#fetchAuthorArticles">fetchAuthorArticles</a></li><li><a href="global.html#fetchAuthorsList">fetchAuthorsList</a></li><li><a href="global.html#fetchCnyes">fetchCnyes</a></li><li><a href="global.html#fetchFuturesData">fetchFuturesData</a></li><li><a href="global.html#fetchGuancha">fetchGuancha</a></li><li><a href="global.html#fetchHackerNews">fetchHackerNews</a></li><li><a href="global.html#fetchHtml">fetchHtml</a></li><li><a href="global.html#fetchInstitutionalData">fetchInstitutionalData</a></li><li><a href="global.html#fetchKeywordArticles">fetchKeywordArticles</a></li><li><a href="global.html#fetchMoneydj">fetchMoneydj</a></li><li><a href="global.html#fetchMops">fetchMops</a></li><li><a href="global.html#fetchOnce">fetchOnce</a></li><li><a href="global.html#fetchPCRatio">fetchPCRatio</a></li><li><a href="global.html#fetchRSS">fetchRSS</a></li><li><a href="global.html#fetchStatementdog">fetchStatementdog</a></li><li><a href="global.html#fetchTaifex">fetchTaifex</a></li><li><a href="global.html#fetchTargetWithRetry">fetchTargetWithRetry</a></li><li><a href="global.html#fetchTitleArticles">fetchTitleArticles</a></li><li><a href="global.html#fetchTopicArticles">fetchTopicArticles</a></li><li><a href="global.html#fetchTopicsList">fetchTopicsList</a></li><li><a href="global.html#fetchTpex3insti">fetchTpex3insti</a></li><li><a href="global.html#fetchTpexMargin">fetchTpexMargin</a></li><li><a href="global.html#fetchTpexStock">fetchTpexStock</a></li><li><a href="global.html#fetchTwDataHoliday">fetchTwDataHoliday</a></li><li><a href="global.html#fetchTwseMargin">fetchTwseMargin</a></li><li><a href="global.html#fetchTwseStock">fetchTwseStock</a></li><li><a href="global.html#fetchTwseT86">fetchTwseT86</a></li><li><a href="global.html#fetchWithRetry">fetchWithRetry</a></li><li><a href="global.html#getCfg">getCfg</a></li><li><a href="global.html#getOptFetch">getOptFetch</a></li><li><a href="global.html#getPayload">getPayload</a></li><li><a href="global.html#htmlToMarkdown">htmlToMarkdown</a></li><li><a href="global.html#isHomepageHtml">isHomepageHtml</a></li><li><a href="global.html#isNonHolidayEntry">isNonHolidayEntry</a></li><li><a href="global.html#isRetryableError">isRetryableError</a></li><li><a href="global.html#isYmd">isYmd</a></li><li><a href="global.html#lookupAuthor">lookupAuthor</a></li><li><a href="global.html#lookupTopic">lookupTopic</a></li><li><a href="global.html#parseAuthorColumnPage">parseAuthorColumnPage</a></li><li><a href="global.html#parseAuthorIndex">parseAuthorIndex</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li><li><a href="global.html#parseIntComma">parseIntComma</a></li><li><a href="global.html#parseListPage">parseListPage</a></li><li><a href="global.html#parseNum">parseNum</a></li><li><a href="global.html#parseSearchResults">parseSearchResults</a></li><li><a href="global.html#parseSearchTotalPages">parseSearchTotalPages</a></li><li><a href="global.html#parseZhuantiArticles">parseZhuantiArticles</a></li><li><a href="global.html#pickPint">pickPint</a></li><li><a href="global.html#rocToWestern">rocToWestern</a></li><li><a href="global.html#safeFilename">safeFilename</a></li><li><a href="global.html#toDatetimeUTC8">toDatetimeUTC8</a></li><li><a href="global.html#toRocDate">toRocDate</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">htmlToMarkdown.mjs</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import get from 'lodash-es/get.js'
+import isbol from 'wsemi/src/isbol.mjs'
+import isstr from 'wsemi/src/isstr.mjs'
+import decodeEntities from './decodeEntities.mjs'
+
+
+/**
+ * HTML轉Markdown
+ *
+ * 採正則式逐項轉換, 不引入DOM解析器, 適用於已切出之正文區塊;
+ * 先移除script、style與註解, 再轉換標題、粗體、斜體、換行、連結與段落, 最後清除殘留標籤並收斂空行
+ *
+ * @param {String} html 輸入HTML字串
+ * @param {Object} [opt={}] 輸入設定物件，預設{}
+ * @param {Boolean} [opt.image=false] 輸入是否將img標籤轉為Markdown圖片語法布林值，預設false代表直接移除
+ * @returns {String} 回傳Markdown字串，輸入非字串時回傳''
+ * @example
+ *
+ * import htmlToMarkdown from './src/htmlToMarkdown.mjs'
+ *
+ * console.log(htmlToMarkdown('&lt;p>a&lt;b>b&lt;/b>&lt;/p>&lt;p>c&lt;/p>'))
+ * // => 'a**b**\n\nc'
+ *
+ * console.log(htmlToMarkdown('&lt;p>&lt;img src="a.png" />&lt;/p>', { image: true }))
+ * // => '![](a.png)'
+ *
+ */
+function htmlToMarkdown(html, opt = {}) {
+
+    //check
+    if (!isstr(html)) {
+        return ''
+    }
+
+    //image
+    let image = get(opt, 'image')
+    if (!isbol(image)) {
+        image = false
+    }
+
+    let s = html
+
+    //移除script、style與註解
+    s = s.replace(/&lt;script[\s\S]*?&lt;\/script>/gi, '')
+    s = s.replace(/&lt;style[\s\S]*?&lt;\/style>/gi, '')
+    s = s.replace(/&lt;!--[\s\S]*?-->/g, '')
+
+    //img
+    if (image) {
+        s = s.replace(/&lt;img[^>]*src="([^"]+)"[^>]*\/?>/gi, (m, url) => `![](${url})`)
+    }
+
+    //h1-h6轉粗體段落
+    s = s.replace(/&lt;h[1-6][^>]*>([\s\S]*?)&lt;\/h[1-6]>/gi, '\n\n**$1**\n\n')
+
+    //strong與b
+    //標籤名後須緊接'>'或空白, 否則&lt;br>會被b規則吃掉而變成'**'(在br規則之前)
+    s = s.replace(/&lt;\/?(?:strong|b)(?:\s[^>]*)?>/gi, '**')
+
+    //em與i
+    //同上, 標籤名後須緊接'>'或空白, 否則&lt;img>會被i規則吃掉而變成'*'
+    s = s.replace(/&lt;\/?(?:em|i)(?:\s[^>]*)?>/gi, '*')
+
+    //br
+    s = s.replace(/&lt;br\s*\/?>/gi, '\n')
+
+    //a
+    s = s.replace(/&lt;a\s+[^>]*href="([^"]+)"[^>]*>([\s\S]*?)&lt;\/a>/gi, (m, url, text) => {
+        let t = text.replace(/&lt;[^>]+>/g, '').trim()
+        return t ? `[${t}](${url})` : ''
+    })
+
+    //p
+    s = s.replace(/&lt;p(?:\s[^>]*)?>/gi, '')
+    s = s.replace(/&lt;\/p>/gi, '\n\n')
+
+    //雜項容器標籤
+    s = s.replace(/&lt;\/?(?:div|span|section|article|font|u)(?:\s[^>]*)?>/gi, '')
+
+    //其餘殘留標籤
+    s = s.replace(/&lt;[^>]+>/g, '')
+
+    //實體
+    s = decodeEntities(s)
+
+    //行內空白標準化
+    s = s.split('\n').map((l) => l.replace(/[ \t\u00A0]+/g, ' ').trimEnd()).join('\n')
+
+    //多重空行收斂
+    s = s.replace(/\n{3,}/g, '\n\n').replace(/\*\*\s*\*\*/g, '')
+
+    return s.trim()
+}
+
+
+export default htmlToMarkdown
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Fri Aug 07 2026 12:04:51 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
