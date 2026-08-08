@@ -22,6 +22,7 @@ Note:
 - All fetch functions use node's built-in `fetch`, so node 18+ is required.
 - `fetchMops` needs Chrome installed (playwright uses `channel: 'chrome'`), or set env `CHROME_PATH` to the browser executable.
 - `fetchGuancha` delegates fetching to `w-fetch-web`, which needs `curl` in system PATH.
+- `fetchRSS` with `opt.method` `'curl'` or `'auto'` also needs `curl` in system PATH.
 
 #### Functions:
 
@@ -78,6 +79,11 @@ let test = async () => {
     let r1 = await wi.fetchRSS('https://www.ptt.cc/atom/Gossiping.xml', { showLog: false })
     console.log('rss:', r1.length, r1[0].time, r1[0].title)
     // => rss: 19 2026-08-07 09:30:19 [問卦] 公視是怎麼走到今天這一步的？
+
+    //綜合新聞: 擋node fetch之站台(403)改走curl抓取, 並以withContent附feed內嵌全文(去標籤純文字)
+    let r1b = await wi.fetchRSS('https://alphaarchitect.com/feed', { method: 'curl', withContent: true, showLog: false })
+    console.log('rss(curl):', r1b.length, r1b[0].content.length, r1b[0].description.length)
+    // => rss(curl): 5 6339 545
 
     //綜合新聞: Hacker News最新文章, 可指定取回篇數
     let r2 = await wi.fetchHackerNews(5, { showLog: false })
@@ -154,6 +160,16 @@ await test()
 | `baseUrl`／`url`／`apiBase` | String | 官方網址 | 來源網址，供測試或改指向鏡像時覆寫 |
 
 重試條件為HTTP 5xx與429及網路層錯誤（含逾時）；HTTP 4xx（429除外）預設不重試，僅部份函數另納入403或404（例如鉅亨網、財報狗、MoneyDJ納入403，RSS納入404）。
+
+#### Options for fetchRSS:
+`fetchRSS`另有專屬選項：
+
+| key | type | default | description |
+| --- | --- | --- | --- |
+| `method` | String | `'fetch'` | 抓取方式，可為`'fetch'`（node內建fetch）、`'curl'`（系統curl，可通過以TLS指紋擋非瀏覽器用戶端之站台）、`'auto'`（curl優先，失敗退回fetch） |
+| `withContent` | Boolean | `false` | `true`時各項目附加`content`欄，依`content:encoded`→`content`→`summary`→`description`優先序取feed內嵌全文，並去除HTML標籤與實體、保留段落換行 |
+
+curl模式之重試退避由`w-fetch-web`內建（3至15秒線性），`baseDelayMs`／`maxDelayMs`／404重試於curl模式不生效；極短之feed（小於100字元）會被curl模式判為`empty-response`。
 
 #### Error contract:
 - 參數不合法（如日期非`YYYYMMDD`、必填參數缺漏）一律`throw`，不會靜默回傳空結果。

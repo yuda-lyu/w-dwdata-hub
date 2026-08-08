@@ -1,4 +1,4 @@
-import wfw from 'w-fetch-web'
+import fetchWebByCurl from 'w-fetch-web/src/fetchWebByCurl.mjs'
 import get from 'lodash-es/get.js'
 import isbol from 'wsemi/src/isbol.mjs'
 import isestr from 'wsemi/src/isestr.mjs'
@@ -10,10 +10,6 @@ import decodeEntities from './decodeEntities.mjs'
 import htmlToMarkdown from './htmlToMarkdown.mjs'
 import extractDivContent from './extractDivContent.mjs'
 import safeFilename from './safeFilename.mjs'
-
-
-//w-fetch-web為UMD套件, 只能default import, named import取不到函數
-let { fetchWebByCurl } = wfw
 
 
 //觀察者網網站根網址

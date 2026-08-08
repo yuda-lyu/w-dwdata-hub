@@ -54,7 +54,7 @@ describe('WDwdataHub', function() {
     })
 
     it('不匯出內部共用函數', function() {
-        let ks = ['fetchWithRetry', 'getOptFetch', 'isYmd', 'toRocDate', 'toDatetimeUTC8', 'decodeEntities', 'htmlToMarkdown', 'extractDivContent', 'parseIntComma']
+        let ks = ['fetchWithRetry', 'getOptFetch', 'isYmd', 'toRocDate', 'toDatetimeUTC8', 'decodeEntities', 'htmlToMarkdown', 'stripHtml', 'extractDivContent', 'parseIntComma']
         let r = ks.map((k) => Object.prototype.hasOwnProperty.call(WDwdataHub, k))
         let rr = ks.map(() => false)
         assert.strict.deepEqual(r, rr)

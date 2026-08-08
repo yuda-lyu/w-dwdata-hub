@@ -126,6 +126,18 @@ function serverForTest() {
                 sendText(200, fx.rssXml, 'application/rss+xml; charset=utf-8')
                 return
             }
+            if (pathname === '/rss/feed-content.xml') {
+                sendText(200, fx.rssContentXml, 'application/rss+xml; charset=utf-8')
+                return
+            }
+            if (pathname === '/rss/feed-desc.xml') {
+                sendText(200, fx.rssDescOnlyXml, 'application/rss+xml; charset=utf-8')
+                return
+            }
+            if (pathname === '/rss/feed-tiny.xml') {
+                sendText(200, fx.rssTinyXml, 'application/rss+xml; charset=utf-8')
+                return
+            }
 
             //===== Hacker News =====
 

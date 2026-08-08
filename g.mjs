@@ -8,6 +8,11 @@ let test = async () => {
     console.log('rss:', r1.length, r1[0].time, r1[0].title)
     // => rss: 19 2026-08-07 09:30:19 [問卦] 公視是怎麼走到今天這一步的？
 
+    //綜合新聞: 擋node fetch之站台(403)改走curl抓取, 並以withContent附feed內嵌全文(去標籤純文字)
+    let r1b = await wi.fetchRSS('https://alphaarchitect.com/feed', { method: 'curl', withContent: true, showLog: false })
+    console.log('rss(curl):', r1b.length, r1b[0].content.length, r1b[0].description.length)
+    // => rss(curl): 5 6339 545
+
     //綜合新聞: Hacker News最新文章, 可指定取回篇數
     let r2 = await wi.fetchHackerNews(5, { showLog: false })
     console.log('hackerNews:', r2.length, r2[0].from, r2[0].title)

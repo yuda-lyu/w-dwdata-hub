@@ -40,6 +40,46 @@ let rssXml = `<?xml version="1.0" encoding="UTF-8"?>
 </rss>`
 
 
+//含content:encoded內嵌全文之feed(WordPress系), 供斷言withContent取全文且顯著長於description;
+//全文內含粗體、實體、&nbsp;與script, 供斷言stripHtml各轉換
+let rssContentXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+<title>內容測試源</title>
+<link>https://rss.example/</link>
+<item>
+<title>含全文項目</title>
+<link>https://rss.example/c1</link>
+<pubDate>Fri, 07 Aug 2026 01:02:03 GMT</pubDate>
+<description>摘要開頭</description>
+<content:encoded><![CDATA[<p>第一段完整全文，含<b>粗體</b>與&amp;實體。</p><p>第二段&nbsp;內容，長度遠大於摘要，供斷言withContent顯著長於description。</p><script>bad()</script>]]></content:encoded>
+</item>
+</channel>
+</rss>`
+
+
+//全文位於description之feed(arXiv系), rss-parser將其映為item.content,
+//供斷言withContent之content fallback(無content:encoded時取content)
+let rssDescOnlyXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>arXiv式測試源</title>
+<link>https://rss.example/</link>
+<item>
+<title>論文一</title>
+<link>https://rss.example/p1</link>
+<pubDate>Fri, 07 Aug 2026 01:02:03 GMT</pubDate>
+<description>arXiv:2608.01234 Announce Type: new Abstract: 這是一段完整摘要，不含HTML標籤，長度足以代表全文內容本體。</description>
+</item>
+</channel>
+</rss>`
+
+
+//合法但小於100字元之feed, 低於fetchWebByCurl之MIN_HTML_LENGTH,
+//供斷言curl模式判empty-response、auto模式退回fetch
+let rssTinyXml = '<rss version="2.0"><channel><title>t</title></channel></rss>'
+
+
 //===== Hacker News =====
 
 
@@ -494,6 +534,9 @@ let guanchaArticleHtml = `<!DOCTYPE html><html><head><title>OPEC+宣布增产_�
 export {
     aiNews,
     rssXml,
+    rssContentXml,
+    rssDescOnlyXml,
+    rssTinyXml,
     hnNewStories,
     hnItems,
     cnyesPage1,

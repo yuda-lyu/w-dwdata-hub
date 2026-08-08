@@ -12,6 +12,7 @@ rollupFiles({
     fdTar,
     nameDistType: 'kebabCase', //直接由hookNameDist給予
     globals: {
+        'child_process': 'child_process',
         'util': 'util',
         'path': 'path',
         'module': 'module',
@@ -24,11 +25,11 @@ rollupFiles({
         'cheerio': 'cheerio',
         'rss-parser': 'rss-parser',
         'playwright': 'playwright',
-        'w-fetch-web': 'w-fetch-web',
         '@mozilla/readability': '@mozilla/readability',
         'jsdom': 'jsdom',
     },
     external: [
+        'child_process',
         'util',
         'path',
         'module',
@@ -41,7 +42,6 @@ rollupFiles({
         'cheerio',
         'rss-parser',
         'playwright',
-        'w-fetch-web',
         '@mozilla/readability',
         'jsdom',
     ],
