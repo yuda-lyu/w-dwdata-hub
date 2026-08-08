@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>fetchTwseStock.mjs - Documentation</title>
+    <title>stripHtml.mjs - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">fetchTwseStock.mjs</h1>
+    <h1 class="page-title">stripHtml.mjs</h1>
     
 
     
@@ -45,122 +45,64 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import get from 'lodash-es/get.js'
-import isestr from 'wsemi/src/isestr.mjs'
-import fetchWithRetry from './fetchWithRetry.mjs'
-import getOptFetch from './getOptFetch.mjs'
-import isYmd from './isYmd.mjs'
-import toRocDate from './toRocDate.mjs'
-
-
-//證交所網站根網址
-let BASE_URL = 'https://www.twse.com.tw'
-
-
-//本函數之預設抓取設定
-let DFLT = {
-    timeout: 10000,
-    maxRetries: 10,
-    baseDelayMs: 5000,
-    maxDelayMs: 30000,
-    label: 'fetch-twse-stock',
-}
+            <pre class="prettyprint source linenums"><code>import isstr from 'wsemi/src/isstr.mjs'
+import decodeEntities from './decodeEntities.mjs'
 
 
 /**
- * 抓取證交所(TWSE)上市股價
+ * 去除HTML標籤與實體, 保留段落換行
  *
- * 指定stockCode時走STOCK_DAY取個股日成交資訊(該API回傳整月資料, 本函數過濾為指定日單筆);
- * 未指定或指定為'all'時走MI_INDEX取全市場收盤資料
+ * 與htmlToMarkdown不同, 本函數輸出純文字(不產生Markdown標記), 供feed內嵌全文等
+ * 「只要內文、不要格式」之場景使用;
+ * 先移除script與style, 再將段落類閉合標籤與br轉為換行, 最後清除殘留標籤並解碼實體
  *
- * @param {String} dateStr 輸入日期YYYYMMDD字串
- * @param {String} [stockCode] 輸入股票代號字串，例如'2330'，省略或給'all'表示全市場
- * @param {Object} [opt={}] 輸入設定物件，預設{}
- * @param {String} [opt.baseUrl='https://www.twse.com.tw'] 輸入證交所根網址字串，供測試或改指向鏡像時覆寫
- * @param {Integer} [opt.timeout=10000] 輸入單次請求逾時毫秒整數，預設10000
- * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
- * @param {Integer} [opt.baseDelayMs=5000] 輸入重試之線性退避基礎毫秒整數，預設5000
- * @param {Integer} [opt.maxDelayMs=30000] 輸入重試之線性退避上限毫秒整數，預設30000
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
- * @returns {Promise} 回傳Promise，resolve回傳證交所API原始資料物件，內含fields與data等欄位，日期無效、API回傳非OK或指定日無交易資料時reject回傳錯誤物件
+ * @param {String} html 輸入HTML字串
+ * @returns {String} 回傳純文字字串，輸入非字串時回傳''
  * @example
  *
- * import fetchTwseStock from './src/fetchTwseStock.mjs'
+ * import stripHtml from './src/stripHtml.mjs'
  *
- * let test = async () => {
- *
- *     let r = await fetchTwseStock('20260807', '2330')
- *     console.log(r.stat, r.data.length)
- *     // => 'OK' 1
- *
- * }
- * await test()
- *     .catch((err) => {
- *         console.log(err)
- *     })
+ * console.log(stripHtml('&lt;p>第一段&lt;b>粗體&lt;/b>&lt;/p>&lt;p>第二段&amp;amp;實體&lt;/p>'))
+ * // => '第一段粗體\n第二段&amp;實體'
  *
  */
-async function fetchTwseStock(dateStr, stockCode, opt = {}) {
-
-    //check, 函數入口驗日期, 令程式化呼叫不繞過CLI之檢核
-    if (!isYmd(dateStr)) {
-        throw new Error(`dateStr 須為合法之 YYYYMMDD 字串，得到: ${dateStr}`)
-    }
-
-    //baseUrl
-    let baseUrl = get(opt, 'baseUrl')
-    if (!isestr(baseUrl)) {
-        baseUrl = BASE_URL
-    }
-    baseUrl = baseUrl.replace(/\/+$/, '')
-
-    //optFetch
-    let optFetch = getOptFetch(opt, DFLT)
-    let showLog = optFetch.showLog
-
-    //isSingleStock
-    let isSingleStock = isestr(stockCode) &amp;&amp; stockCode.toLowerCase() !== 'all'
-    let stockNo = isSingleStock ? stockCode : 'ALLBUT0999'
-
-    //url
-    let url = ''
-    if (isSingleStock) {
-        url = `${baseUrl}/exchangeReport/STOCK_DAY?response=json&amp;date=${dateStr}&amp;stockNo=${stockNo}`
-    }
-    else {
-        url = `${baseUrl}/exchangeReport/MI_INDEX?response=json&amp;date=${dateStr}&amp;type=ALLBUT0999`
-    }
-
-    if (showLog) {
-        console.log(`Fetching TWSE data: ${dateStr}, Stock: ${stockNo}`)
-        console.log(`URL: ${url}`)
-    }
-
-    //data
-    let data = await fetchWithRetry(url, optFetch)
+function stripHtml(html) {
 
     //check
-    if (get(data, 'stat') !== 'OK') {
-        throw new Error(`TWSE API returned: ${get(data, 'stat')}`)
+    if (!isstr(html)) {
+        return ''
     }
 
-    //STOCK_DAY回傳整月資料, 呼叫者既已指定單一日期則過濾為該日單筆
-    //保留原欄位結構(fields/data/title等), 僅替換data為篩選後陣列
-    if (isSingleStock &amp;&amp; Array.isArray(data.data)) {
-        let rocDate = toRocDate(dateStr)
-        let filtered = data.data.filter((row) => row[0] === rocDate)
-        data.data = filtered
-        if (filtered.length === 0) {
-            //整月有資料但指定日無 → 當日停盤、假日或未開市
-            throw new Error(`TWSE 個股 ${stockCode} 於 ${dateStr} 無交易資料（可能為假日或停盤）`)
-        }
-    }
+    let s = html
 
-    return data
+    //移除script與style
+    s = s.replace(/&lt;script[\s\S]*?&lt;\/script>/gi, '')
+    s = s.replace(/&lt;style[\s\S]*?&lt;\/style>/gi, '')
+
+    //段落類閉合標籤與br轉為換行
+    s = s.replace(/&lt;\/(?:p|div|li|h[1-6])>/gi, '\n')
+    s = s.replace(/&lt;br\s*\/?>/gi, '\n')
+
+    //清除殘留標籤
+    s = s.replace(/&lt;[^>]+>/g, '')
+
+    //解碼實體
+    s = decodeEntities(s)
+
+    //decodeEntities把&amp;nbsp;解為U+00A0, 統一為半形空白(必須用顯式跳脫u00A0, 不可貼字面字元)
+    s = s.replace(/\u00A0/g, ' ')
+
+    //行內空白標準化
+    s = s.split('\n').map((l) => l.replace(/[ \t]+/g, ' ').trim()).join('\n')
+
+    //多重空行收斂
+    s = s.replace(/\n{3,}/g, '\n\n')
+
+    return s.trim()
 }
 
 
-export default fetchTwseStock
+export default stripHtml
 </code></pre>
         </article>
     </section>
