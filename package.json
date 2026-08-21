@@ -1,15 +1,15 @@
 {
   "name": "w-dwdata-hub",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "main": "dist/w-dwdata-hub.umd.js",
   "dependencies": {
     "cheerio": "^1.2.0",
     "rss-parser": "^3.13.0",
-    "w-fetch-web": "^1.0.9",
-    "wsemi": "^1.8.78"
+    "w-fetch-web": "^1.0.10",
+    "wsemi": "^1.8.79"
   },
   "devDependencies": {
-    "w-package-tools": "^1.1.14"
+    "w-package-tools": "^1.1.15"
   },
   "scripts": {
     "test": "mocha --parallel --timeout 180000",
