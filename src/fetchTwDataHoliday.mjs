@@ -70,7 +70,7 @@ function isNonHolidayEntry(entry) {
  * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
  * @param {Integer} [opt.baseDelayMs=5000] 輸入重試之線性退避基礎毫秒整數，預設5000
  * @param {Integer} [opt.maxDelayMs=30000] 輸入重試之線性退避上限毫秒整數，預設30000
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示重試訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示重試訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{dataYear,totalHolidays,holidays}，有給checkDate時另含{checkDate,isHoliday,holidayName}，API回傳非JSON或空陣列時reject回傳錯誤物件
  * @example
  *

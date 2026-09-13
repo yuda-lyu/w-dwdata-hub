@@ -18,7 +18,7 @@ describe('fetchAiNewsAggregator', function() {
     })
 
     it('轉為統一格式並去除欄位前後空白', async function() {
-        let r = await fetchAiNewsAggregator({ url: svr.url('/ai-news/latest-24h.json'), showLog: false })
+        let r = await fetchAiNewsAggregator({ url: svr.url('/ai-news/latest-24h.json'), useShowLog: false })
         let rr = [
             {
                 url: 'https://ai.example/a1',
@@ -39,7 +39,7 @@ describe('fetchAiNewsAggregator', function() {
     })
 
     it('published_at無法解析時time退回空字串', async function() {
-        let t = await fetchAiNewsAggregator({ url: svr.url('/ai-news/latest-24h.json'), showLog: false })
+        let t = await fetchAiNewsAggregator({ url: svr.url('/ai-news/latest-24h.json'), useShowLog: false })
         let r = t[1].time
         let rr = ''
         assert.strict.deepEqual(r, rr)
@@ -47,7 +47,7 @@ describe('fetchAiNewsAggregator', function() {
 
     it('回傳非JSON時reject', async function() {
         let r = null
-        await fetchAiNewsAggregator({ url: svr.url('/json/bad'), maxRetries: 0, showLog: false })
+        await fetchAiNewsAggregator({ url: svr.url('/json/bad'), maxRetries: 0, useShowLog: false })
             .then(() => {
                 r = 'resolved'
             })
@@ -61,7 +61,7 @@ describe('fetchAiNewsAggregator', function() {
     it('HTTP 404不重試並reject', async function() {
         let c0 = svr.getCount('/status/404')
         let e = null
-        await fetchAiNewsAggregator({ url: svr.url('/status/404'), maxRetries: 3, showLog: false })
+        await fetchAiNewsAggregator({ url: svr.url('/status/404'), maxRetries: 3, useShowLog: false })
             .catch((err) => {
                 e = err
             })
@@ -71,7 +71,7 @@ describe('fetchAiNewsAggregator', function() {
     })
 
     it('回應無items欄位時回傳空陣列', async function() {
-        let r = await fetchAiNewsAggregator({ url: svr.url('/json/ok'), showLog: false })
+        let r = await fetchAiNewsAggregator({ url: svr.url('/json/ok'), useShowLog: false })
         let rr = []
         assert.strict.deepEqual(r, rr)
     })

@@ -18,7 +18,7 @@ describe('fetchHackerNews', function() {
     })
 
     it('僅保留story, 無url者退回站內討論頁網址', async function() {
-        let r = await fetchHackerNews(30, { apiBase: svr.url('/hn'), showLog: false })
+        let r = await fetchHackerNews(30, { apiBase: svr.url('/hn'), useShowLog: false })
         let rr = [
             {
                 url: 'https://hn.example/1',
@@ -39,7 +39,7 @@ describe('fetchHackerNews', function() {
     })
 
     it('limit限制取回篇數', async function() {
-        let t = await fetchHackerNews(1, { apiBase: svr.url('/hn'), showLog: false })
+        let t = await fetchHackerNews(1, { apiBase: svr.url('/hn'), useShowLog: false })
         let r = [t.length, t[0].title]
         let rr = [1, 'HN標題一']
         assert.strict.deepEqual(r, rr)
@@ -48,7 +48,7 @@ describe('fetchHackerNews', function() {
     it('limit非正整數時改用預設值30而非回傳空陣列', async function() {
         let r = []
         for (let limit of [0, -1, NaN, null, undefined, 'abc']) {
-            let t = await fetchHackerNews(limit, { apiBase: svr.url('/hn'), showLog: false })
+            let t = await fetchHackerNews(limit, { apiBase: svr.url('/hn'), useShowLog: false })
             r.push(t.length)
         }
         let rr = [2, 2, 2, 2, 2, 2]
@@ -56,7 +56,7 @@ describe('fetchHackerNews', function() {
     })
 
     it('apiBase尾端斜線會被正規化', async function() {
-        let t = await fetchHackerNews(30, { apiBase: svr.url('/hn') + '/', showLog: false })
+        let t = await fetchHackerNews(30, { apiBase: svr.url('/hn') + '/', useShowLog: false })
         let r = t.length
         let rr = 2
         assert.strict.deepEqual(r, rr)
@@ -64,7 +64,7 @@ describe('fetchHackerNews', function() {
 
     it('取ID清單失敗時reject', async function() {
         let r = null
-        await fetchHackerNews(30, { apiBase: svr.url('/nothing'), maxRetries: 0, showLog: false })
+        await fetchHackerNews(30, { apiBase: svr.url('/nothing'), maxRetries: 0, useShowLog: false })
             .then(() => {
                 r = 'resolved'
             })

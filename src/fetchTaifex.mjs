@@ -144,7 +144,7 @@ function parseNum(str) {
 async function fetchFuturesData(dateSlash, cfg) {
 
     let url = `${cfg.baseUrl}/cht/3/futDataDown?down_type=1&queryStartDate=${dateSlash}&queryEndDate=${dateSlash}&commodity_id=TX`
-    if (cfg.showLog) {
+    if (cfg.useShowLog) {
         console.log(`Fetching futures data: ${url}`)
     }
 
@@ -201,7 +201,7 @@ async function fetchFuturesData(dateSlash, cfg) {
         result.afterHoursVolume = parseNum(afterHoursRow['成交量'])
     }
 
-    if (cfg.showLog) {
+    if (cfg.useShowLog) {
         console.log(`  台指期近月 (${nearMonth}): 開${result.open} 高${result.high} 低${result.low} 收${result.close} 結算${result.settlement} 量${result.volume}`)
         if (result.afterHoursClose !== null) {
             console.log(`  盤後: 收${result.afterHoursClose} 結算${result.afterHoursSettlement} 量${result.afterHoursVolume}`)
@@ -222,7 +222,7 @@ async function fetchFuturesData(dateSlash, cfg) {
 async function fetchInstitutionalData(dateSlash, cfg) {
 
     let url = `${cfg.baseUrl}/cht/3/futContractsDateDown?queryStartDate=${dateSlash}&queryEndDate=${dateSlash}&commodityId=TXF`
-    if (cfg.showLog) {
+    if (cfg.useShowLog) {
         console.log(`Fetching institutional data: ${url}`)
     }
 
@@ -253,7 +253,7 @@ async function fetchInstitutionalData(dateSlash, cfg) {
             tradingNet: parseNum(row['多空交易口數淨額']),
         }
 
-        if (cfg.showLog) {
+        if (cfg.useShowLog) {
             console.log(`  ${identity}: 未平倉淨額 ${result[key].netContracts} 口`)
         }
 
@@ -279,7 +279,7 @@ async function fetchInstitutionalData(dateSlash, cfg) {
 async function fetchPCRatio(dateSlash, cfg) {
 
     let url = `${cfg.baseUrl}/cht/3/pcRatioDown?queryStartDate=${dateSlash}&queryEndDate=${dateSlash}`
-    if (cfg.showLog) {
+    if (cfg.useShowLog) {
         console.log(`Fetching P/C ratio: ${url}`)
     }
 
@@ -299,7 +299,7 @@ async function fetchPCRatio(dateSlash, cfg) {
         openInterestRatio: parseNum(row['買賣權未平倉量比率%']),
     }
 
-    if (cfg.showLog) {
+    if (cfg.useShowLog) {
         console.log(`  Put ${result.putVolume} / Call ${result.callVolume} = ${result.ratio}%`)
     }
 
@@ -321,7 +321,7 @@ async function fetchPCRatio(dateSlash, cfg) {
  * @param {Integer} [opt.baseDelayMs=5000] 輸入重試之線性退避基礎毫秒整數，預設5000
  * @param {Integer} [opt.maxDelayMs=30000] 輸入重試之線性退避上限毫秒整數，預設30000
  * @param {Integer} [opt.interRequestDelayMs=1000] 輸入三支CSV之間隔毫秒整數，預設1000
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{date,futures,institutional,pcRatio,errors}，日期無效或三支資料全失敗時reject回傳錯誤物件
  * @example
  *
@@ -359,8 +359,8 @@ async function fetchTaifex(dateStr, opt = {}) {
 
     //cfg
     let optFetch = getOptFetch(opt, DFLT)
-    let showLog = optFetch.showLog
-    let cfg = { baseUrl, showLog, optFetch }
+    let useShowLog = optFetch.useShowLog
+    let cfg = { baseUrl, useShowLog, optFetch }
 
     //interRequestDelayMs
     let interRequestDelayMs = get(opt, 'interRequestDelayMs')
@@ -373,7 +373,7 @@ async function fetchTaifex(dateStr, opt = {}) {
 
     //dateSlash
     let dateSlash = `${dateStr.substring(0, 4)}/${dateStr.substring(4, 6)}/${dateStr.substring(6, 8)}`
-    if (showLog) {
+    if (useShowLog) {
         console.log(`Fetching TAIFEX data for ${dateStr} (${dateSlash})`)
     }
 
@@ -387,7 +387,7 @@ async function fetchTaifex(dateStr, opt = {}) {
     }
     catch (err) {
         let msg = `台指期行情: ${get(err, 'message', err)}`
-        if (showLog) {
+        if (useShowLog) {
             console.error(msg)
         }
         errors.push(msg)
@@ -400,7 +400,7 @@ async function fetchTaifex(dateStr, opt = {}) {
     }
     catch (err) {
         let msg = `三大法人: ${get(err, 'message', err)}`
-        if (showLog) {
+        if (useShowLog) {
             console.error(msg)
         }
         errors.push(msg)
@@ -413,7 +413,7 @@ async function fetchTaifex(dateStr, opt = {}) {
     }
     catch (err) {
         let msg = `Put/Call Ratio: ${get(err, 'message', err)}`
-        if (showLog) {
+        if (useShowLog) {
             console.error(msg)
         }
         errors.push(msg)

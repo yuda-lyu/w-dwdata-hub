@@ -10,7 +10,7 @@ describe('fetchTwseMargin', function() {
 
     before(async function() {
         svr = await serverForTest()
-        optFast = { baseUrl: svr.url(''), baseDelayMs: 10, maxDelayMs: 10, showLog: false }
+        optFast = { baseUrl: svr.url(''), baseDelayMs: 10, maxDelayMs: 10, useShowLog: false }
     })
 
     after(async function() {

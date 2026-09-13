@@ -119,7 +119,7 @@ async function fetchTargetWithRetry(page, target, cfg) {
         }
 
         let ms = Math.min(cfg.baseDelayMs * attempt, cfg.maxDelayMs)
-        if (cfg.showLog) {
+        if (cfg.useShowLog) {
             console.warn(`[${target.name}][Retry ${attempt}/${cfg.maxRetries}] ${data.error} — 等待 ${ms / 1000}s 後重試...`)
         }
         await delay(ms)
@@ -141,7 +141,7 @@ async function fetchTargetWithRetry(page, target, cfg) {
  * @param {String} [opt.pageUrl='https://mops.twse.com.tw/mops/#/web/t146sb10'] 輸入MOPS重大訊息頁網址字串，供測試或改指向鏡像時覆寫
  * @param {String} [opt.apiUrl='https://mops.twse.com.tw/mops/api/t146sb10'] 輸入MOPS查詢API網址字串，供測試或改指向鏡像時覆寫
  * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{results,hasError}，results各筆為{market,marketKind,data,error,timestamp}，瀏覽器啟動失敗時reject回傳錯誤物件
  * @example
  *
@@ -183,10 +183,10 @@ async function fetchMops(opt = {}) {
         maxRetries = cint(maxRetries)
     }
 
-    //showLog
-    let showLog = get(opt, 'showLog')
-    if (!isbol(showLog)) {
-        showLog = true
+    //useShowLog
+    let useShowLog = get(opt, 'useShowLog')
+    if (!isbol(useShowLog)) {
+        useShowLog = true
     }
 
     //cfg
@@ -194,7 +194,7 @@ async function fetchMops(opt = {}) {
         maxRetries,
         baseDelayMs: DEFAULT_BASE_DELAY_MS,
         maxDelayMs: DEFAULT_MAX_DELAY_MS,
-        showLog,
+        useShowLog,
     }
 
     //targets
@@ -207,7 +207,7 @@ async function fetchMops(opt = {}) {
         }
     })
 
-    if (showLog) {
+    if (useShowLog) {
         console.log('啟動瀏覽器...')
     }
 
@@ -232,7 +232,7 @@ async function fetchMops(opt = {}) {
                 throw new Error(`瀏覽器啟動失敗（已重試 ${maxRetries} 次）: ${err.message}`)
             }
             let ms = Math.min(DEFAULT_BASE_DELAY_MS * attempt, DEFAULT_MAX_DELAY_MS)
-            if (showLog) {
+            if (useShowLog) {
                 console.warn(`[browser.launch][Retry ${attempt}/${maxRetries}] ${err.message} — 等待 ${ms / 1000}s 後重試...`)
             }
             await delay(ms)
@@ -244,7 +244,7 @@ async function fetchMops(opt = {}) {
         let page = await browser.newPage()
 
         //帶重試之頁面導航
-        if (showLog) {
+        if (useShowLog) {
             console.log('前往 MOPS 重大訊息頁面 (t146sb10)...')
         }
         for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
@@ -258,7 +258,7 @@ async function fetchMops(opt = {}) {
                     throw err
                 }
                 let ms = Math.min(DEFAULT_BASE_DELAY_MS * attempt, DEFAULT_MAX_DELAY_MS)
-                if (showLog) {
+                if (useShowLog) {
                     console.warn(`[page.goto][Retry ${attempt}/${maxRetries}] ${err.message} — 等待 ${ms / 1000}s 後重試...`)
                 }
                 await delay(ms)
@@ -271,7 +271,7 @@ async function fetchMops(opt = {}) {
         let results = []
         for (let target of targets) {
 
-            if (showLog) {
+            if (useShowLog) {
                 console.log(`正在抓取 [${target.name}] 資料...`)
             }
 
@@ -288,7 +288,7 @@ async function fetchMops(opt = {}) {
             await page.waitForTimeout(1000)
         }
 
-        if (showLog) {
+        if (useShowLog) {
             let summary = results.map((r) => {
                 let resultData = get(r, 'data.result', get(r, 'data'))
                 let count = Array.isArray(resultData) ? resultData.length : 0

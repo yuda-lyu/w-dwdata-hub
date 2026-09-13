@@ -10,7 +10,7 @@ describe('fetchTwDataHoliday', function() {
 
     before(async function() {
         svr = await serverForTest()
-        optFast = { url: svr.url('/v1/holidaySchedule/holidaySchedule'), baseDelayMs: 10, maxDelayMs: 10, showLog: false }
+        optFast = { url: svr.url('/v1/holidaySchedule/holidaySchedule'), baseDelayMs: 10, maxDelayMs: 10, useShowLog: false }
     })
 
     after(async function() {

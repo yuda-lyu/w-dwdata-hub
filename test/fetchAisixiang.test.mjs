@@ -22,7 +22,7 @@ describe('fetchAisixiang', function() {
 
     before(async function() {
         svr = await serverForTest()
-        optFast = { baseUrl: svr.url(''), baseDelayMs: 10, maxDelayMs: 10, pageDelayMs: 0, showLog: false }
+        optFast = { baseUrl: svr.url(''), baseDelayMs: 10, maxDelayMs: 10, pageDelayMs: 0, useShowLog: false }
     })
 
     after(async function() {

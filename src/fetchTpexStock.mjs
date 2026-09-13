@@ -40,7 +40,7 @@ let MIN_COLUMNS = 8
  * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
  * @param {Integer} [opt.baseDelayMs=5000] 輸入重試之線性退避基礎毫秒整數，預設5000
  * @param {Integer} [opt.maxDelayMs=30000] 輸入重試之線性退避上限毫秒整數，預設30000
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{source,date,count,data}，日期無效、無資料或指定個股查無資料時reject回傳錯誤物件
  * @example
  *
@@ -75,7 +75,7 @@ async function fetchTpexStock(dateStr, stockCodes, opt = {}) {
 
     //optFetch
     let optFetch = getOptFetch(opt, DFLT)
-    let showLog = optFetch.showLog
+    let useShowLog = optFetch.useShowLog
 
     //targetCodes
     let targetCodes = isearr(stockCodes) ? stockCodes : []
@@ -84,7 +84,7 @@ async function fetchTpexStock(dateStr, stockCodes, opt = {}) {
     let rocDate = toRocDate(dateStr)
     let url = `${baseUrl}/web/stock/aftertrading/daily_close_quotes/stk_quote_result.php?l=zh-tw&d=${rocDate}&s=0,asc,0&o=json`
 
-    if (showLog) {
+    if (useShowLog) {
         console.log(`Fetching TPEX data: ${dateStr} (${rocDate})`)
         console.log(`Target: ${targetCodes.length > 0 ? targetCodes.join(', ') : 'All Market'}`)
         console.log(`URL: ${url}`)

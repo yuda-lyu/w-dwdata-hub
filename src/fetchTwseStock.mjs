@@ -34,7 +34,7 @@ let DFLT = {
  * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
  * @param {Integer} [opt.baseDelayMs=5000] 輸入重試之線性退避基礎毫秒整數，預設5000
  * @param {Integer} [opt.maxDelayMs=30000] 輸入重試之線性退避上限毫秒整數，預設30000
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳證交所API原始資料物件，內含fields與data等欄位，日期無效、API回傳非OK或指定日無交易資料時reject回傳錯誤物件
  * @example
  *
@@ -69,7 +69,7 @@ async function fetchTwseStock(dateStr, stockCode, opt = {}) {
 
     //optFetch
     let optFetch = getOptFetch(opt, DFLT)
-    let showLog = optFetch.showLog
+    let useShowLog = optFetch.useShowLog
 
     //isSingleStock
     let isSingleStock = isestr(stockCode) && stockCode.toLowerCase() !== 'all'
@@ -84,7 +84,7 @@ async function fetchTwseStock(dateStr, stockCode, opt = {}) {
         url = `${baseUrl}/exchangeReport/MI_INDEX?response=json&date=${dateStr}&type=ALLBUT0999`
     }
 
-    if (showLog) {
+    if (useShowLog) {
         console.log(`Fetching TWSE data: ${dateStr}, Stock: ${stockNo}`)
         console.log(`URL: ${url}`)
     }

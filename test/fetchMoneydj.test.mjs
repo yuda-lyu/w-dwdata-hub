@@ -8,7 +8,7 @@ describe('fetchMoneydj', function() {
     let svr = null
 
     //optFast, 令重試與頁間等待縮至最短, 避免測試耗時
-    let optFast = { baseDelayMs: 10, maxDelayMs: 10, pageDelayMs: 0, showLog: false }
+    let optFast = { baseDelayMs: 10, maxDelayMs: 10, pageDelayMs: 0, useShowLog: false }
 
     before(async function() {
         svr = await serverForTest()

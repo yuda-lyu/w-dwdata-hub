@@ -154,7 +154,7 @@ async function fetchOnce(url, cfg) {
  * @param {Integer} [opt.maxDelayMs=30000] 輸入線性退避之上限毫秒整數，預設30000
  * @param {Array} [opt.retryStatus=[]] 輸入額外視為可重試之HTTP狀態碼陣列，例如[403]，預設[]
  * @param {String} [opt.label=''] 輸入重試訊息前綴字串，預設''
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示重試訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示重試訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳解析後資料，responseType為'json'時回物件、'text'時回字串、'arrayBuffer'時回ArrayBuffer，重試耗盡或遇不可重試錯誤時reject回傳錯誤物件
  * @example
  *
@@ -261,10 +261,10 @@ async function fetchWithRetry(url, opt = {}) {
         label = 'fetchWithRetry'
     }
 
-    //showLog
-    let showLog = get(opt, 'showLog')
-    if (!isbol(showLog)) {
-        showLog = true
+    //useShowLog
+    let useShowLog = get(opt, 'useShowLog')
+    if (!isbol(useShowLog)) {
+        useShowLog = true
     }
 
     //cfg
@@ -287,7 +287,7 @@ async function fetchWithRetry(url, opt = {}) {
 
             //線性退避
             let ms = Math.min(baseDelayMs * attempt, maxDelayMs)
-            if (showLog) {
+            if (useShowLog) {
                 console.warn(`[${label}][Retry ${attempt}/${maxRetries}] ${err.message} — 等待 ${ms / 1000}s 後重試...`)
             }
             await delay(ms)

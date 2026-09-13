@@ -52,7 +52,7 @@ let DEFAULT_DAYS_BACK = 10
  * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
  * @param {Integer} [opt.baseDelayMs=5000] 輸入重試之線性退避基礎毫秒整數，預設5000
  * @param {Integer} [opt.maxDelayMs=30000] 輸入重試之線性退避上限毫秒整數，預設30000
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳新聞物件陣列，各物件為{time,title,link}，抓取失敗時reject回傳錯誤物件
  * @example
  *
@@ -117,13 +117,13 @@ async function fetchCnyes(opt = {}) {
 
     //optFetch
     let optFetch = getOptFetch(opt, DFLT)
-    let showLog = optFetch.showLog
+    let useShowLog = optFetch.useShowLog
 
     //now, startAt
     let now = Math.floor(Date.now() / 1000)
     let startAt = now - 86400 * daysBack
 
-    if (showLog) {
+    if (useShowLog) {
         console.log('Starting to fetch Anue (tw_stock) news...')
     }
 
@@ -146,14 +146,14 @@ async function fetchCnyes(opt = {}) {
         //items
         let items = get(data, 'items.data')
         if (!isearr(items)) {
-            if (showLog) {
+            if (useShowLog) {
                 console.log('No more items found.')
             }
             break
         }
 
         allItems = allItems.concat(items)
-        if (showLog) {
+        if (useShowLog) {
             console.log(`Page ${page}: Fetched ${items.length} items. Total so far: ${allItems.length}`)
         }
         page++
@@ -164,7 +164,7 @@ async function fetchCnyes(opt = {}) {
 
     //finalItems
     let finalItems = allItems.slice(0, targetTotal)
-    if (showLog) {
+    if (useShowLog) {
         console.log(`Total items collected: ${finalItems.length}`)
     }
 
@@ -172,7 +172,7 @@ async function fetchCnyes(opt = {}) {
 
         //time, 單筆publishAt缺漏或異常時退回空字串並記錄, 保留title與link避免拖垮其餘正常新聞
         let time = toDatetimeUTC8(get(item, 'publishAt', 0))
-        if (time === '' && showLog) {
+        if (time === '' && useShowLog) {
             console.warn(`[fetch-cnyes] 時間格式化失敗(newsId=${get(item, 'newsId', '')}, publishAt=${get(item, 'publishAt', '')}) — 該筆time退回空字串`)
         }
 

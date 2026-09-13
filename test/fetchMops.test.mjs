@@ -62,7 +62,7 @@ describe('fetchMops', function() {
             pageUrl: svr.url('/mops/page'),
             apiUrl: svr.url('/mops/api/t146sb10'),
             maxRetries: 0,
-            showLog: false,
+            useShowLog: false,
         })
         let r = [
             t.hasError,
@@ -92,7 +92,7 @@ describe('fetchMops', function() {
             pageUrl: svr.url('/mops/page'),
             apiUrl: svr.url('/mops-error/api/t146sb10'),
             maxRetries: 0,
-            showLog: false,
+            useShowLog: false,
         })
         let r = [
             t.hasError,

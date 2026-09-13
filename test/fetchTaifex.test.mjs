@@ -10,7 +10,7 @@ describe('fetchTaifex', function() {
 
     before(async function() {
         svr = await serverForTest()
-        optFast = { baseUrl: svr.url(''), baseDelayMs: 10, maxDelayMs: 10, interRequestDelayMs: 0, showLog: false }
+        optFast = { baseUrl: svr.url(''), baseDelayMs: 10, maxDelayMs: 10, interRequestDelayMs: 0, useShowLog: false }
     })
 
     after(async function() {

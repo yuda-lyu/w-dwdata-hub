@@ -77,7 +77,7 @@ function getCfg(opt = {}) {
         maxPages = Math.min(cint(maxPages), MAX_PAGES)
     }
 
-    return { baseUrl, showLog: optFetch.showLog, pageDelayMs, maxPages, optFetch }
+    return { baseUrl, useShowLog: optFetch.useShowLog, pageDelayMs, maxPages, optFetch }
 }
 
 
@@ -255,7 +255,7 @@ async function fetchAllSearchPages(buildUrl, parser, cfg) {
     for (let page = 1; page <= cfg.maxPages; page++) {
 
         let url = buildUrl(page)
-        if (cfg.showLog) {
+        if (cfg.useShowLog) {
             process.stderr.write(`[info] fetching page ${page}${totalPages > 1 ? `/${totalPages}` : ''} ...\n`)
         }
         let html = await fetchWithRetry(url, cfg.optFetch)
@@ -268,7 +268,7 @@ async function fetchAllSearchPages(buildUrl, parser, cfg) {
         let items = parser(html, cfg.baseUrl)
         let fresh = items.filter((it) => !seen.has(it.aid))
         if (fresh.length === 0) {
-            if (cfg.showLog) {
+            if (cfg.useShowLog) {
                 process.stderr.write(`[info] page ${page} 無新項目，停止翻頁\n`)
             }
             break
@@ -301,7 +301,7 @@ async function fetchAllSearchPages(buildUrl, parser, cfg) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳作者物件陣列，各物件為{slug,name}
  * @example
  *
@@ -381,7 +381,7 @@ function lookupAuthor(authors, name) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳主題物件陣列，各物件為{id,name,category}
  * @example
  *
@@ -474,7 +474,7 @@ function lookupTopic(topics, name) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,query,resolved,fetched_at,count,items}，name與slug皆未給時reject回傳錯誤物件
  * @example
  *
@@ -516,7 +516,7 @@ async function fetchAuthorArticles(opt = {}) {
 
     if (!usedSlug) {
 
-        if (cfg.showLog) {
+        if (cfg.useShowLog) {
             process.stderr.write('[info] fetching authors list from /thinktank/ ...\n')
         }
         let authors = await fetchAuthorsList(opt)
@@ -584,7 +584,7 @@ async function fetchAuthorArticles(opt = {}) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,query,resolved,fetched_at,count,items}，keyword非有效字串時reject回傳錯誤物件
  * @example
  *
@@ -656,7 +656,7 @@ async function fetchKeywordArticles(keyword, opt = {}) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,query,resolved,fetched_at,count,items}，keyword非有效字串時reject回傳錯誤物件
  * @example
  *
@@ -730,7 +730,7 @@ async function fetchTitleArticles(keyword, opt = {}) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,query,resolved,fetched_at,count,items}，keyword與id皆未給時reject回傳錯誤物件
  * @example
  *
@@ -772,7 +772,7 @@ async function fetchTopicArticles(opt = {}) {
 
     if (!topicId) {
 
-        if (cfg.showLog) {
+        if (cfg.useShowLog) {
             process.stderr.write('[info] fetching topics list from /zhuanti/ ...\n')
         }
         let topics = await fetchTopicsList(opt)
@@ -847,7 +847,7 @@ async function fetchTopicArticles(opt = {}) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,url,title,chars,markdown}，aid與url皆未給或解析失敗時reject回傳錯誤物件
  * @example
  *

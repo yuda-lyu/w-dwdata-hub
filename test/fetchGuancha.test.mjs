@@ -24,7 +24,7 @@ describe('fetchGuancha', function() {
 
     before(async function() {
         svr = await serverForTest()
-        optFast = { baseUrl: svr.url(''), maxRetries: 0, pageDelayMs: 0, showLog: false }
+        optFast = { baseUrl: svr.url(''), maxRetries: 0, pageDelayMs: 0, useShowLog: false }
     })
 
     after(async function() {

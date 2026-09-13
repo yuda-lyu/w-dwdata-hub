@@ -53,7 +53,7 @@ let REG_TIME = /^(\d{2}\/\d{2}\s+\d{2}:\d{2}|\d{2}:\d{2}|昨\s*\d{2}:\d{2})$/
  * @param {Integer} [opt.maxDelayMs=30000] 輸入重試最大延遲毫秒整數，預設30000
  * @param {Integer} [opt.pageDelayMs] 輸入頁間延遲毫秒整數，未給時採隨機1000至3000毫秒
  * @param {Function} [opt.onPageDone] 輸入每頁完成時之回呼函數，傳入(pageIndex,itemCount,totalPages)
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳新聞物件陣列，各物件為{time,title,link}，抓取到0筆時reject回傳錯誤物件
  * @example
  *
@@ -97,7 +97,7 @@ async function fetchMoneydj(opt = {}) {
 
     //optFetch
     let optFetch = getOptFetch(opt, DFLT)
-    let showLog = optFetch.showLog
+    let useShowLog = optFetch.useShowLog
 
     //pageDelayMs, 頁間隨機延遲毫秒
     let pageDelayMs = get(opt, 'pageDelayMs')
@@ -151,7 +151,7 @@ async function fetchMoneydj(opt = {}) {
             items = await fetchPage(i)
         }
         catch (err) {
-            if (showLog) {
+            if (useShowLog) {
                 console.warn(`[Page ${i}] 抓取失敗，已跳過：${err.message}`)
             }
             continue

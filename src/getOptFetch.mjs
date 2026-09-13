@@ -55,7 +55,7 @@ function pickPint(opt, dflt, key, fallback) {
  * import getOptFetch from './src/getOptFetch.mjs'
  *
  * console.log(getOptFetch({ maxRetries: 2 }, { timeout: 15000, label: 'abc' }))
- * // => { timeout: 15000, maxRetries: 2, baseDelayMs: 5000, maxDelayMs: 30000, showLog: true, label: 'abc' }
+ * // => { timeout: 15000, maxRetries: 2, baseDelayMs: 5000, maxDelayMs: 30000, useShowLog: true, label: 'abc' }
  *
  */
 function getOptFetch(opt = {}, dflt = {}) {
@@ -72,13 +72,13 @@ function getOptFetch(opt = {}, dflt = {}) {
         maxRetries = cint(maxRetries)
     }
 
-    //showLog
-    let showLog = get(opt, 'showLog')
-    if (!isbol(showLog)) {
-        showLog = get(dflt, 'showLog')
+    //useShowLog
+    let useShowLog = get(opt, 'useShowLog')
+    if (!isbol(useShowLog)) {
+        useShowLog = get(dflt, 'useShowLog')
     }
-    if (!isbol(showLog)) {
-        showLog = true
+    if (!isbol(useShowLog)) {
+        useShowLog = true
     }
 
     let r = {
@@ -86,7 +86,7 @@ function getOptFetch(opt = {}, dflt = {}) {
         maxRetries,
         baseDelayMs: pickPint(opt, dflt, 'baseDelayMs', DEFAULT_BASE_DELAY_MS),
         maxDelayMs: pickPint(opt, dflt, 'maxDelayMs', DEFAULT_MAX_DELAY_MS),
-        showLog,
+        useShowLog,
     }
 
     //各函數固有特性, 不開放呼叫端覆寫

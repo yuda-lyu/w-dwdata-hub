@@ -47,7 +47,7 @@ let FALLBACK_DATE = 'time, [class*="date"], [class*="time"]'
  * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
  * @param {Integer} [opt.baseDelayMs=5000] 輸入重試之線性退避基礎毫秒整數，預設5000
  * @param {Integer} [opt.maxDelayMs=30000] 輸入重試之線性退避上限毫秒整數，預設30000
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳新聞物件陣列，各物件為{time,title,link}，抓取失敗或解析到0筆時reject回傳錯誤物件
  * @example
  *
@@ -76,9 +76,9 @@ async function fetchStatementdog(opt = {}) {
 
     //optFetch
     let optFetch = getOptFetch(opt, DFLT)
-    let showLog = optFetch.showLog
+    let useShowLog = optFetch.useShowLog
 
-    if (showLog) {
+    if (useShowLog) {
         console.log(`Fetching ${url}...`)
     }
 
@@ -97,7 +97,7 @@ async function fetchStatementdog(opt = {}) {
     let titleSel = usePrimary ? PRIMARY_TITLE : FALLBACK_TITLE
     let linkSel = usePrimary ? PRIMARY_LINK : FALLBACK_LINK
     let dateSel = usePrimary ? PRIMARY_DATE : FALLBACK_DATE
-    if (!usePrimary && showLog) {
+    if (!usePrimary && useShowLog) {
         console.warn('主要 CSS selector 未匹配，嘗試 fallback selector...')
     }
 
@@ -125,7 +125,7 @@ async function fetchStatementdog(opt = {}) {
         newsItems.push({ time, title, link })
     })
 
-    if (showLog) {
+    if (useShowLog) {
         console.log(`Extracted News Items: ${newsItems.length}`)
     }
 

@@ -113,10 +113,10 @@ function getCfg(opt = {}) {
         timeoutMs = cint(timeoutMs)
     }
 
-    //showLog
-    let showLog = get(opt, 'showLog')
-    if (!isbol(showLog)) {
-        showLog = true
+    //useShowLog
+    let useShowLog = get(opt, 'useShowLog')
+    if (!isbol(useShowLog)) {
+        useShowLog = true
     }
 
     //optFetch
@@ -143,7 +143,7 @@ function getCfg(opt = {}) {
         maxPages = Math.min(cint(maxPages), MAX_PAGES)
     }
 
-    return { baseUrl, showLog, pageDelayMs, maxPages, optFetch }
+    return { baseUrl, useShowLog, pageDelayMs, maxPages, optFetch }
 }
 
 
@@ -316,7 +316,7 @@ async function fetchAllListPages(slug, cfg) {
     for (let page = 1; page <= cfg.maxPages; page++) {
 
         let url = `${cfg.baseUrl}/${slug}/list_${page}.shtml`
-        if (cfg.showLog) {
+        if (cfg.useShowLog) {
             process.stderr.write(`[info] fetching ${slug} list_${page} ...\n`)
         }
 
@@ -329,7 +329,7 @@ async function fetchAllListPages(slug, cfg) {
             if (page === 1) {
                 throw err
             }
-            if (cfg.showLog) {
+            if (cfg.useShowLog) {
                 process.stderr.write(`[info] page ${page} fetch error (assumed end of list): ${err.message}\n`)
             }
             break
@@ -342,7 +342,7 @@ async function fetchAllListPages(slug, cfg) {
                 err.reason = 'redirected-to-homepage'
                 throw err
             }
-            if (cfg.showLog) {
+            if (cfg.useShowLog) {
                 process.stderr.write(`[info] page ${page} 被導向首頁，視為到底，停止翻頁\n`)
             }
             break
@@ -353,7 +353,7 @@ async function fetchAllListPages(slug, cfg) {
         let items = parseListPage(html, cfg.baseUrl)
         let fresh = items.filter((it) => !seen.has(it.url))
         if (fresh.length === 0) {
-            if (cfg.showLog) {
+            if (cfg.useShowLog) {
                 process.stderr.write(`[info] page ${page} 無新項目，停止翻頁\n`)
             }
             break
@@ -384,7 +384,7 @@ async function fetchAllListPages(slug, cfg) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳作者物件陣列，各物件為{slug,name,letter}
  * @example
  *
@@ -477,7 +477,7 @@ function lookupTopic(name) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,query,resolved,fetched_at,count,items}，name與slug皆未給時reject回傳錯誤物件
  * @example
  *
@@ -518,7 +518,7 @@ async function fetchAuthorArticles(opt = {}) {
 
     if (!resolvedSlug) {
 
-        if (cfg.showLog) {
+        if (cfg.useShowLog) {
             process.stderr.write('[info] fetching authors index from / ...\n')
         }
         let authors = await fetchAuthorsList(opt)
@@ -685,7 +685,7 @@ async function fetchTitleArticles(keyword, opt = {}) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,query,resolved,fetched_at,count,items}，name與slug皆未給時reject回傳錯誤物件
  * @example
  *
@@ -790,7 +790,7 @@ async function fetchTopicArticles(opt = {}) {
  * @param {Integer} [opt.maxRetries=5] 輸入最大重試次數整數，預設5
  * @param {Integer} [opt.pageDelayMs=1000] 輸入翻頁之頁間延遲毫秒整數，預設1000
  * @param {Integer} [opt.maxPages=50] 輸入翻頁上限正整數，上限為50，預設50
- * @param {Boolean} [opt.showLog=true] 輸入是否顯示過程訊息布林值，預設true
+ * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
  * @returns {Promise} 回傳Promise，resolve回傳結果物件{status,site,mode,url,title,author,published,chars,markdown}，url非有效字串時reject回傳錯誤物件
  * @example
  *

@@ -8,7 +8,7 @@ describe('fetchStatementdog', function() {
     let svr = null
 
     //optFast, 令重試等待縮至10毫秒, 避免測試耗時
-    let optFast = { baseDelayMs: 10, maxDelayMs: 10, showLog: false }
+    let optFast = { baseDelayMs: 10, maxDelayMs: 10, useShowLog: false }
 
     before(async function() {
         svr = await serverForTest()
