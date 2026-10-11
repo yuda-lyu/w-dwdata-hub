@@ -1,12 +1,12 @@
 {
   "name": "w-dwdata-hub",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "main": "dist/w-dwdata-hub.umd.js",
   "dependencies": {
     "cheerio": "^1.2.0",
     "rss-parser": "^3.13.0",
-    "w-fetch-web": "^1.0.25",
-    "wsemi": "^1.9.11"
+    "w-fetch-web": "^1.0.26",
+    "wsemi": "^1.9.12"
   },
   "devDependencies": {
     "w-package-tools": "^1.1.16"
