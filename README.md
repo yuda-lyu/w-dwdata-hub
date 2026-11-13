@@ -20,7 +20,8 @@ npm i w-dwdata-hub
 
 Note:
 - All fetch functions use node's built-in `fetch`, so node 18+ is required.
-- `fetchMops` needs Chrome installed (playwright uses `channel: 'chrome'`), or set env `CHROME_PATH` to the browser executable.
+- `fetchMops` launches the system Google Chrome (`channel: 'chrome'`) through [w-playwright](https://www.npmjs.com/package/w-playwright), so **Google Chrome must be installed** on the machine (or set env `CHROME_PATH` to the browser executable). Installing this package brings in `w-playwright` and its pinned `playwright-core`; do not install `playwright` or `playwright-core` separately, and do not run `npx playwright install` (it can download a different version than the one `w-playwright` uses). `fetchMops` uses no Playwright-managed browser, so nothing is downloaded; if you also launch a managed browser yourself, get it with `await wpw.ensureChromium()` of `w-playwright`, and for offline machines point env `PLAYWRIGHT_BROWSERS_PATH` to a pre-copied browser folder **before** loading the package (see the `w-playwright` README).
+- Launch guard: on Windows, a new Chromium-family browser root process (real Chrome 153+, Edge, full Chromium) may call `LogonUser` with a wrong password for the current user at every launch (security event 4625, bad-password count +1; the default local policy locks the account after 10 within 10 minutes). `w-playwright` therefore always adds one `--disable-features` argument that contains Playwright's default list plus `AutofillAiWalletPrivatePasses` (which stops it); there is no option to turn this off. The environments `PWDEBUG` (inspector mode) and `SELENIUM_REMOTE_URL` would bypass the guard and are rejected (`E_ENV`). Optionally set env `W_PLAYWRIGHT_LOGON_GUARD=1` to refuse a launch when the current user's bad-password count is not 0 (`E_LOGON_GUARD`, off by default; see the `w-playwright` README).
 - `fetchGuancha` delegates fetching to `w-fetch-web`, which needs `curl` in system PATH.
 - `fetchRSS` with `opt.method` `'curl'` or `'auto'` also needs `curl` in system PATH.
 
@@ -39,7 +40,7 @@ Taiwan stock market news:
 | `fetchCnyes(opt)` | fetch Anue(cnyes) tw_stock news, returns `{time, title, link}` |
 | `fetchMoneydj(opt)` | fetch MoneyDJ tw stock news(MB06), returns `{time, title, link}` |
 | `fetchStatementdog(opt)` | fetch StatementDog latest news, returns `{time, title, link}` |
-| `fetchMops(opt)` | fetch MOPS material announcements of the day, by playwright |
+| `fetchMops(opt)` | fetch MOPS material announcements of the day, by the system Chrome launched through w-playwright |
 
 Taiwan stock market data:
 | function | description |
@@ -171,6 +172,12 @@ await test()
 
 curl模式之重試退避由`w-fetch-web`內建（3至15秒線性），`baseDelayMs`／`maxDelayMs`／404重試於curl模式不生效；極短之feed（小於100字元）會被curl模式判為`empty-response`。
 
+#### Browser launch of fetchMops:
+`fetchMops`經`w-playwright`啟動系統Chrome（須已安裝Google Chrome，或以環境變數`CHROME_PATH`指定執行檔），啟動時一律加入守門參數（原因見上方Note）。啟動規則（改經`w-playwright`啟動之版本起）：
+- 啟動失敗或逾時（`w-playwright`錯誤碼`E_LAUNCH`、`E_LAUNCH_TIMEOUT`）才重試，重試次數為`opt.maxRetries`與`2`取小者（最多啟動3次；原為`maxRetries`，預設最多啟動11次）。原因：Chromium系瀏覽器每啟動一個根行程即可能替目前Windows使用者記一次錯誤密碼，守門若因瀏覽器改版而失效，一次呼叫內之啟動次數須遠低於鎖定門檻。`opt.maxRetries`對頁面導航與查詢之重試不變。
+- `w-playwright`之拒絕類錯誤（`E_ENV`、`E_PW_VERSION`、`E_LOGON_GUARD`、`E_BROWSER_MISSING`、`E_ARG`、`E_INSTALL`）重試不會成功，立即`reject`、不重試。
+- 啟動失敗時`reject`之`Error`訊息格式為`瀏覽器啟動失敗（已重試 N 次）: <w-playwright固定詞彙訊息>`，並帶`code`屬性（`w-playwright`之錯誤碼，如`E_LAUNCH`、`E_LOGON_GUARD`）；`Playwright`之原錯誤訊息不附於`Error`，`opt.useShowLog`為`true`（預設）時以`console.warn`印出。
+
 #### Error contract:
 - 參數不合法（如日期非`YYYYMMDD`、必填參數缺漏）一律`throw`，不會靜默回傳空結果。
 - 抓取或解析失敗一律`reject`；`fetchAisixiang`與`fetchGuancha`則改回傳`{status:'error',...}`結果物件。
@@ -181,4 +188,4 @@ curl模式之重試退避由`w-fetch-web`內建（3至15秒線性），`baseDela
 ```alias
 npm test
 ```
-測試不連線外部網站，改以`test/tools/serverForTest.mjs`啟動本機HTTP伺服器提供各官方API格式之固定回應；`fetchMops`之瀏覽器案例於無Chrome環境時自動跳過。
+測試不連線外部網站，改以`test/tools/serverForTest.mjs`啟動本機HTTP伺服器提供各官方API格式之固定回應；`fetchMops`之瀏覽器案例於無Chrome環境時自動跳過（以`w-playwright`之`findSystemChrome`判斷Chrome是否存在，不啟動瀏覽器），有Chrome時每案經`w-playwright`啟動真Chrome一次（共2次）。`fetchMops`之啟動選項與重試規則另以`w-playwright`之`setBrowserTypeForTest`替身驗證（`test/unit-fetchMopsLaunch.test.mjs`，不啟動瀏覽器）。在Windows上跑真Chrome之案例前，建議先確認目前使用者之錯誤密碼次數為0（可設`W_PLAYWRIGHT_LOGON_GUARD=1`由`w-playwright`於啟動前檢查）。

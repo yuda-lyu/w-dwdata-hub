@@ -1,4 +1,4 @@
-import { chromium } from 'playwright'
+import wpw from 'w-playwright'
 import get from 'lodash-es/get.js'
 import isbol from 'wsemi/src/isbol.mjs'
 import isestr from 'wsemi/src/isestr.mjs'
@@ -18,6 +18,15 @@ let DEFAULT_BASE_DELAY_MS = 5000
 let DEFAULT_MAX_DELAY_MS = 30000
 let LAUNCH_TIMEOUT_MS = 360000
 let GOTO_TIMEOUT_MS = 60000
+
+//啟動瀏覽器之重試次數上限, 與maxRetries取小者(maxRetries仍用於頁面導航與查詢):
+//Chromium系瀏覽器每啟動一個新的根行程即可能替目前Windows使用者呼叫一次LogonUser(錯誤密碼+1, 10分鐘內10次即鎖帳號),
+//w-playwright雖已加入守門參數, 但守門若因瀏覽器改版而失效, 一次呼叫內之啟動次數仍須遠低於門檻, 故不沿用最多11次之啟動
+let MAX_LAUNCH_RETRIES = 2
+
+//啟動失敗時可重試之w-playwright錯誤碼(Playwright啟動失敗或逾時),
+//其餘(E_ARG、E_ENV、E_PW_VERSION、E_LOGON_GUARD、E_BROWSER_MISSING、E_INSTALL)為w-playwright之拒絕或缺檔, 重試不會成功故立即失敗
+let RETRYABLE_LAUNCH_CODES = ['E_LAUNCH', 'E_LAUNCH_TIMEOUT']
 
 
 //目標市場別, marketKind為API查詢參數
@@ -52,6 +61,63 @@ function getPayload(marketKind) {
         firstin: 1,
         off: 1,
     }
+}
+
+
+/**
+ * 經w-playwright啟動本機Chrome並帶重試
+ *
+ * 一律經w-playwright(已加入避免Windows帳號被錯誤密碼鎖定之守門參數)啟動, 不直接使用playwright;
+ * 僅E_LAUNCH、E_LAUNCH_TIMEOUT重試, 重試次數為maxRetries與MAX_LAUNCH_RETRIES取小者;
+ * 失敗時reject回傳Error, 訊息含w-playwright之固定詞彙訊息, 並帶其code
+ *
+ * @param {Object} cfg 輸入已正規化之設定物件，內含maxRetries、baseDelayMs、maxDelayMs與useShowLog
+ * @returns {Promise} 回傳Promise，resolve回傳playwright之browser物件
+ */
+async function launchBrowser(cfg) {
+
+    let maxLaunchRetries = Math.min(cfg.maxRetries, MAX_LAUNCH_RETRIES)
+
+    //w-playwright不附原錯誤於對外錯誤, 原錯誤只交funLog; 顯示過程訊息時印出供除錯
+    let funLog = null
+    if (cfg.useShowLog) {
+        funLog = (label, info, detail) => {
+            if (label === 'launch-error') {
+                console.warn(`[browser.launch] ${info.code}: ${detail && detail.message}`)
+            }
+        }
+    }
+
+    for (let attempt = 1; attempt <= maxLaunchRetries + 1; attempt++) {
+        try {
+            return await wpw.launchChromium({
+                headless: true,
+                //設定環境變數CHROME_PATH則用該路徑啟動瀏覽器
+                //未設定時為undefined, w-playwright視為未給executablePath, 改走channel為'chrome', 行為不變
+                executablePath: process.env.CHROME_PATH || undefined,
+                channel: 'chrome',
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                timeout: LAUNCH_TIMEOUT_MS,
+                ...(funLog && { funLog }),
+            })
+        }
+        catch (err) {
+            let attemptsLeft = maxLaunchRetries + 1 - attempt
+            if (!RETRYABLE_LAUNCH_CODES.includes(err.code) || attemptsLeft <= 0) {
+                let e = new Error(`瀏覽器啟動失敗（已重試 ${attempt - 1} 次）: ${err.message}`)
+                if (typeof err.code === 'string') {
+                    e.code = err.code
+                }
+                throw e
+            }
+            let ms = Math.min(cfg.baseDelayMs * attempt, cfg.maxDelayMs)
+            if (cfg.useShowLog) {
+                console.warn(`[browser.launch][Retry ${attempt}/${maxLaunchRetries}] ${err.message} — 等待 ${ms / 1000}s 後重試...`)
+            }
+            await delay(ms)
+        }
+    }
+
 }
 
 
@@ -133,16 +199,17 @@ async function fetchTargetWithRetry(page, target, cfg) {
 /**
  * 抓取公開資訊觀測站(MOPS)今日重大訊息
  *
- * 以playwright啟動本機Chrome(channel為'chrome', 可由環境變數CHROME_PATH指定執行檔)開啟MOPS重大訊息頁,
+ * 經w-playwright啟動本機Chrome(channel為'chrome', 須已安裝Google Chrome, 可由環境變數CHROME_PATH指定執行檔)開啟MOPS重大訊息頁,
  * 再於頁面context內逐一查詢上市、上櫃、興櫃與公開發行之今日重大訊息;
- * 單一市場別失敗時記錄於該筆之error並續抓其餘市場別, 由hasError告知是否有失敗
+ * 單一市場別失敗時記錄於該筆之error並續抓其餘市場別, 由hasError告知是否有失敗;
+ * 啟動瀏覽器一律加入w-playwright之守門參數(停用Chromium功能AutofillAiWalletPrivatePasses), 避免Windows上每啟動一次Chrome即替目前使用者記一次錯誤密碼而鎖定帳號
  *
  * @param {Object} [opt={}] 輸入設定物件，預設{}
  * @param {String} [opt.pageUrl='https://mops.twse.com.tw/mops/#/web/t146sb10'] 輸入MOPS重大訊息頁網址字串，供測試或改指向鏡像時覆寫
  * @param {String} [opt.apiUrl='https://mops.twse.com.tw/mops/api/t146sb10'] 輸入MOPS查詢API網址字串，供測試或改指向鏡像時覆寫
- * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10
+ * @param {Integer} [opt.maxRetries=10] 輸入最大重試次數整數，含初始共執行maxRetries+1次，預設10；啟動瀏覽器之重試次數另以2為上限(即最多啟動3次)，且僅啟動失敗或逾時才重試
  * @param {Boolean} [opt.useShowLog=true] 輸入是否顯示過程訊息布林值，預設true
- * @returns {Promise} 回傳Promise，resolve回傳結果物件{results,hasError}，results各筆為{market,marketKind,data,error,timestamp}，瀏覽器啟動失敗時reject回傳錯誤物件
+ * @returns {Promise} 回傳Promise，resolve回傳結果物件{results,hasError}，results各筆為{market,marketKind,data,error,timestamp}，瀏覽器啟動失敗時reject回傳錯誤物件，其code為w-playwright之錯誤碼(如E_LAUNCH、E_LOGON_GUARD)
  * @example
  *
  * import fetchMops from './src/fetchMops.mjs'
@@ -211,33 +278,8 @@ async function fetchMops(opt = {}) {
         console.log('啟動瀏覽器...')
     }
 
-    //browser, 帶重試之瀏覽器啟動
-    let browser = null
-    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
-        try {
-            browser = await chromium.launch({
-                headless: true,
-                //設定環境變數CHROME_PATH則用該路徑啟動瀏覽器
-                //未設定時為undefined, playwright會忽略executablePath改走channel為'chrome', 行為不變
-                executablePath: process.env.CHROME_PATH || undefined,
-                channel: 'chrome',
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                timeout: LAUNCH_TIMEOUT_MS,
-            })
-            break
-        }
-        catch (err) {
-            let attemptsLeft = maxRetries + 1 - attempt
-            if (attemptsLeft <= 0) {
-                throw new Error(`瀏覽器啟動失敗（已重試 ${maxRetries} 次）: ${err.message}`)
-            }
-            let ms = Math.min(DEFAULT_BASE_DELAY_MS * attempt, DEFAULT_MAX_DELAY_MS)
-            if (useShowLog) {
-                console.warn(`[browser.launch][Retry ${attempt}/${maxRetries}] ${err.message} — 等待 ${ms / 1000}s 後重試...`)
-            }
-            await delay(ms)
-        }
-    }
+    //browser, 經w-playwright帶重試之瀏覽器啟動
+    let browser = await launchBrowser(cfg)
 
     try {
 
@@ -309,5 +351,5 @@ async function fetchMops(opt = {}) {
 }
 
 
-export { MARKET_KINDS, getPayload }
+export { MARKET_KINDS, getPayload, launchBrowser }
 export default fetchMops
